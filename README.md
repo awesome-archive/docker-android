@@ -51,14 +51,18 @@ List of Docker images
 |Linux|8.0|26|chrome|58.0|2.31|budtmo/docker-android-x86-8.0|[![](https://images.microbadger.com/badges/image/budtmo/docker-android-x86-8.0.svg)](https://microbadger.com/images/budtmo/docker-android-x86-8.0 "Get your own image badge on microbadger.com")|
 |Linux|8.1|27|chrome|61.0|2.33|budtmo/docker-android-x86-8.1|[![](https://images.microbadger.com/badges/image/budtmo/docker-android-x86-8.1.svg)](https://microbadger.com/images/budtmo/docker-android-x86-8.1 "Get your own image badge on microbadger.com")|
 |Linux|9.0|28|chrome|66.0|2.40|budtmo/docker-android-x86-9.0|[![](https://images.microbadger.com/badges/image/budtmo/docker-android-x86-9.0.svg)](https://microbadger.com/images/budtmo/docker-android-x86-9.0 "Get your own image badge on microbadger.com")|
+|Linux|10.0|29|chrome|74.0|74.0.3729.6|budtmo/docker-android-x86-10.0|[![](https://images.microbadger.com/badges/image/budtmo/docker-android-x86-10.0.svg)](https://microbadger.com/images/budtmo/docker-android-x86-10.0 "Get your own image badge on microbadger.com")|
 |All |-|-|-|-|-|budtmo/docker-android-real-device|[![](https://images.microbadger.com/badges/image/budtmo/docker-android-real-device.svg)](https://microbadger.com/images/budtmo/docker-android-real-device "Get your own image badge on microbadger.com")|
-|Linux|All|All|All|All|All|budtmo/docker-android-genymotion|[![](https://images.microbadger.com/badges/image/budtmo/docker-android-genymotion.svg)](https://microbadger.com/images/budtmo/docker-android-genymotion "Get your own image badge on microbadger.com")|
+|All|All|All|All|All|All|budtmo/docker-android-genymotion|[![](https://images.microbadger.com/badges/image/budtmo/docker-android-genymotion.svg)](https://microbadger.com/images/budtmo/docker-android-genymotion "Get your own image badge on microbadger.com")|
 
 List of Devices
 ---------------
 
 Type   | Device Name
 -----  | -----
+Phone  | Samsung Galaxy S10
+Phone  | Samsung Galaxy S9
+Phone  | Samsung Galaxy S8
 Phone  | Samsung Galaxy S7 Edge
 Phone  | Samsung Galaxy S7
 Phone  | Samsung Galaxy S6
@@ -109,16 +113,16 @@ Build Android project
 
 Docker-Android can be used for building Android project and executing its unit test. This following steps will illustrate how to build Android project:
 
-1. Clone [this sample test project](https://github.com/googlesamples/android-testing).
+1. Clone [this sample test project](https://github.com/android/testing-samples).
 
     ```bash
-    git clone git@github.com:googlesamples/android-testing.git
+    git clone git@github.com:android/testing-samples.git
     ```
 
 2. Build the project
 
     ```bash
-    docker run -it --rm -v $PWD/android-testing/ui/espresso/BasicSample:/root/tmp budtmo/docker-android-x86-8.1 tmp/gradlew build
+    docker run -it --rm -v $PWD/testing-samples/ui/espresso/BasicSample:/root/tmp budtmo/docker-android-x86-8.1 tmp/gradlew build
     ```
     
 Control Android connected to host (Emulator or Real Device)
@@ -241,7 +245,7 @@ docker exec -it android-container tail -f /var/log/supervisor/docker-android.std
 
 Emulator Skins
 --------------
-The Emulator skins are taken from [Android Studio IDE](https://developer.android.com/studio) and [Samsung Developer Website](https://developer.samsung.com/home.do)
+The Emulator skins are taken from [Android Studio IDE](https://developer.android.com/studio) and [Samsung Developer Website](e)
 
 Security
 --------

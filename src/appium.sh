@@ -23,8 +23,15 @@ function prepare_geny_cloud() {
 	    device=$(get_value '.device')
 	    port=$(get_value '.port')
 
-	    echo "Starting \"$device\" with template name \"$template\"..."
-	    instance_uuid=$(gmsaas instances start "${template}" "${device}")
+		if [[ $device != null ]]; then
+			echo "Starting \"$device\" with template name \"$template\"..."
+			instance_uuid=$(gmsaas instances start "${template}" "${device}")
+		else
+			echo "Starting Device with Random name..."
+			random_device_name=$(python3  -c 'import uuid; print(str(uuid.uuid4()).upper())')
+			instance_uuid=$(gmsaas instances start "${template}" "${random_device_name}")
+		fi
+
 	    echo "Instance-ID: \"$instance_uuid\""
 	    created_instances+=("${instance_uuid}")
 
@@ -59,12 +66,17 @@ function prepare_geny_aws() {
 		instance=$(get_value '.instance')
 		ami=$(get_value '.AMI')
 		sg=$(get_value '.SG')
+		subnet_id=$(get_value '.subnet_id')
+		if [[ $subnet_id == null ]]; then
+			subnet_id=""
+		fi
 
 		echo $region
 		echo $android_version
 		echo $instance
 		echo $ami
 		echo $sg
+		echo $subnet_id
 
 	    #TODO: remove this dirty hack
 		if [[ $android_version == null ]]; then
@@ -183,6 +195,11 @@ variable "instance_type_$index" {
 	default = "$instance"
 }
 
+variable "subnet_id_$index" {
+	type	= "string"
+	default = "$subnet_id"
+}
+
 provider "aws" {
 	alias = "provider_$index"
 	region  = "\${var.aws_region_$index}"
@@ -214,6 +231,7 @@ resource "aws_instance" "geny_aws_$index" {
 	provider      = "aws.provider_$index"
 	ami="\${data.aws_ami.geny_aws_$index.id}"
 	instance_type = "\${var.instance_type_$index}"
+	subnet_id = "\${var.subnet_id_$index}"
 	vpc_security_group_ids=["\${aws_security_group.geny_sg_$index.name}"]
 	key_name      = "\${aws_key_pair.geny_key_$index.key_name}"
 	tags {
@@ -292,8 +310,9 @@ function run_appium() {
 		CMD+=" --relaxed-security"
 	fi
 
-	echo "Preparation is done"
-  	$CMD
+	echo "Preparation is done"  	
+	TERM="xterm -T AppiumServer -n AppiumServer -e $CMD"
+	$TERM
 }
 
 function ga(){

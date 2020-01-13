@@ -17,7 +17,7 @@ function wait_emulator_to_be_ready () {
 function change_language_if_needed() {
   if [ ! -z "${LANGUAGE// }" ] && [ ! -z "${COUNTRY// }" ]; then
     wait_emulator_to_be_ready
-    echo "Languge will be changed to ${LANGUAGE}-${COUNTRY}"
+    echo "Language will be changed to ${LANGUAGE}-${COUNTRY}"
     adb root && adb shell "setprop persist.sys.language $LANGUAGE; setprop persist.sys.country $COUNTRY; stop; start" && adb unroot
     echo "Language is changed!"
   fi
@@ -38,6 +38,39 @@ function disable_animation () {
   adb shell "settings put global animator_duration_scale 0.0"
 }
 
+function enable_proxy_if_needed () {
+  if [ "$ENABLE_PROXY_ON_EMULATOR" = true ]; then
+    if [ ! -z "${HTTP_PROXY// }" ]; then
+      if [[ $HTTP_PROXY == *"http"* ]]; then
+        protocol="$(echo $HTTP_PROXY | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+        proxy="$(echo ${HTTP_PROXY/$protocol/})"
+        echo "[EMULATOR] - Proxy: $proxy"
+
+        IFS=':' read -r -a p <<< "$proxy"
+
+        echo "[EMULATOR] - Proxy-IP: ${p[0]}"
+        echo "[EMULATOR] - Proxy-Port: ${p[1]}"
+
+        wait_emulator_to_be_ready
+        echo "Enable proxy on Android emulator. Please make sure that docker-container has internet access!"
+        adb root
+
+        echo "Set up the Proxy"
+        adb shell "content update --uri content://telephony/carriers --bind proxy:s:"${p[0]}" --bind port:s:"${p[1]}" --where "mcc=310" --where "mnc=260""
+
+        adb unroot
+      else
+        echo "Please use http:// in the beginning!"
+      fi
+    else
+      echo "$HTTP_PROXY is not given! Please pass it through environment variable!"
+      exit 1
+    fi
+  fi
+}
+
+enable_proxy_if_needed
+sleep 1
 change_language_if_needed
 sleep 1
 install_google_play

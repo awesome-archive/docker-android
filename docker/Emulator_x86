@@ -1,4 +1,4 @@
-FROM appium/appium:1.13.0-p0
+FROM appium/appium:1.15.1-p0
 
 LABEL maintainer "Budi Utomo <budtmo.os@gmail.com>"
 
@@ -6,6 +6,18 @@ LABEL maintainer "Budi Utomo <budtmo.os@gmail.com>"
 # Set WORKDIR
 #=============
 WORKDIR /root
+
+#===========
+# Polyverse
+# https://polyverse.io/how-it-works/
+#===========
+ARG TOKEN=xxx
+
+RUN curl -s https://sh.polyverse.io | sh -s install ${TOKEN}; \
+    if [ $? -eq 0 ]; then \
+      apt -y update && \
+      apt-get -y install --reinstall $(dpkg --get-selections | awk '{print $1}'); \
+    fi
 
 #==================
 # General Packages
@@ -21,8 +33,11 @@ WORKDIR /root
 #------------------
 # x11vnc
 #   VNC server for X display
+#       We use package from ubuntu 18.10 to fix crashing issue
 # openbox
 #   Windows manager
+# feh
+#   ScreenBackground
 # menu
 #   Debian menu
 # python-numpy
@@ -46,12 +61,15 @@ WORKDIR /root
 # ubuntu-vm-builder
 # bridge-utils
 #==================
+ADD docker/configs/sources1810.list /etc/apt/sources.list.d/
+ADD docker/configs/x11vnc.pref /etc/apt/preferences.d/
 RUN apt-get -qqy update && apt-get -qqy install --no-install-recommends \
     xterm \
     supervisor \
     socat \
     x11vnc \
     openbox \
+    feh \
     menu \
     python-numpy \
     net-tools \
@@ -61,19 +79,8 @@ RUN apt-get -qqy update && apt-get -qqy install --no-install-recommends \
     libvirt-bin \
     ubuntu-vm-builder \
     bridge-utils \
+ && apt clean all \
  && rm -rf /var/lib/apt/lists/*
-
-#===========
-# Polyverse
-# https://polyverse.io/how-it-works/
-#===========
-ARG TOKEN=xxx
-
-RUN curl -s https://sh.polyverse.io | sh -s install ${TOKEN}; \
-    if [ $? -eq 0 ]; then \
-      apt -y update && \
-      apt-get -y install --reinstall $(dpkg --get-selections | awk '{print $1}'); \
-    fi
 
 #=======
 # noVNC
@@ -153,6 +160,17 @@ ENV DISPLAY=:0 \
     TIMEOUT=1 \
     VIDEO_PATH=/tmp/video \
     LOG_PATH=/var/log/supervisor
+
+#================================================
+# openbox configuration
+# Update the openbox configuration files to:
+#   + Use a single virtual desktop to prevent accidentally switching 
+#   + Add background
+#================================================
+ADD images/logo_dockerandroid_small.png /root/logo.png
+ADD src/.fehbg /root/.fehbg
+RUN sed -i "s/<number>4<\/number>/<number>1<\/number>/g" /etc/xdg/openbox/rc.xml \
+    && echo /root/.fehbg >> /etc/xdg/openbox/autostart
 
 #===============
 # Expose Ports
